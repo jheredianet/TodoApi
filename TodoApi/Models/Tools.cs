@@ -107,10 +107,8 @@ namespace TodoApi.Models
 
         public static void SaveDataIntoInfluxDB(tlm objTLM)
         {
-
-
-            char[] Token = "mzMvmu3kC9H8wgwR".ToCharArray();
-            var influxDBClient = InfluxDBClientFactory.CreateV1("https://influxdb.infoinnova.net", "homeassistant", Token, "homeassistant", null);
+            char[] Token = Program.AppConfig.InfluxDBToken.ToCharArray();
+            var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer, Program.AppConfig.InfluxDBUser, Token,Program.AppConfig.InfluxDBDataBase, null);
 
             using (var writeApi = influxDBClient.GetWriteApi())
             {

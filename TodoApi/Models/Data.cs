@@ -16,6 +16,10 @@ namespace TodoApi.Models
     {
         public string ABRPUrl { get; set; }
         public bool DebugMode { get; set; }
+        public string InfluxDBToken { get; set; }
+        public string InfluxDBUser { get; set; }
+        public string InfluxDBDataBase { get; set; }
+        public string InfluxDBServer { get; set; }
     }
 
     public class tlm
