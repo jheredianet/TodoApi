@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -27,6 +28,14 @@ namespace TodoApi.Controllers
             // Read Counter
             Counter.Total = Models.Tools.getCounter();
 
+            TimeSpan Interval = DateTime.Now - Counter.LastUpdate;
+            Counter.LastUpdateInSeconds = Convert.ToInt32(Interval.TotalSeconds);
+
+            // Solo para depuración
+            //if (Program.AppConfig.DebugMode)
+            //{
+            //    Models.Tools.guardarLog(DateTime.Now.ToString() + " - " + Environment.MachineName);
+            //}
             return Counter;
         }
 
@@ -39,14 +48,11 @@ namespace TodoApi.Controllers
                 return BadRequest("ID. not valid");
             }
 
-            // Solo para depuración
-            // Models.Tools.guardarLog(tlm + " | " + token + " | " + api_key);
-
             // Serialize JSON
             var objTLM = Models.Tools.parseTLM(tlm);
 
-            // Send data to ABRP
-            var URL = "http://api.iternio.com/1/tlm/send";
+            // Send data to ABRP (read from config)
+            var URL = Program.AppConfig.ABRPUrl;
 
             var urljson = URL += "?";
             urljson += "api_key=" + api_key;
@@ -94,7 +100,5 @@ namespace TodoApi.Controllers
             return Ok(Counter);
 
         }
-
-
     }
 }

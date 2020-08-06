@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
 namespace TodoApi
 {
     public class Program
     {
+        public static Models.GlobalSettings AppConfig;
         public static void Main(string[] args)
         {
+            // Read config from json file
+            AppConfig = Models.Tools.getConfig();
             CreateWebHostBuilder(args).Build().Run();
         }
 
@@ -21,4 +17,6 @@ namespace TodoApi
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>();
     }
+
+
 }

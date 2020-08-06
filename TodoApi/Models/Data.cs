@@ -7,8 +7,15 @@ namespace TodoApi.Models
 {
     public class CounterData
     {
+        public int LastUpdateInSeconds { get; set; }
         public DateTime LastUpdate { get; set; }
         public int Total { get; set; }
+    }
+
+    public class GlobalSettings
+    {
+        public string ABRPUrl { get; set; }
+        public bool DebugMode { get; set; }
     }
 
     public class tlm
@@ -29,7 +36,7 @@ namespace TodoApi.Models
         public double voltage { get; set; }
         public double current { get; set; }
         public double power { get; set; }
-  
+
     }
 
 }

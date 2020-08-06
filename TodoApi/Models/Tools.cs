@@ -2,7 +2,6 @@
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Writes;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
 using System.Reflection;
@@ -85,6 +84,18 @@ namespace TodoApi.Models
             return Counter;
         }
 
+        public static GlobalSettings getConfig()
+        {
+            var configFile = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "config.json");
+            GlobalSettings config = null;
+            using (StreamReader r = new StreamReader(configFile))
+            {
+                string json = r.ReadToEnd();
+                config = JsonConvert.DeserializeObject<GlobalSettings>(json);
+            }
+            return config;
+        }
+
         private static void initCounter()
         {
             counterFile = Path.Combine(Path.GetDirectoryName(FicheroLog()), "counter.txt");
@@ -96,7 +107,7 @@ namespace TodoApi.Models
 
         public static void SaveDataIntoInfluxDB(tlm objTLM)
         {
-           
+
 
             char[] Token = "mzMvmu3kC9H8wgwR".ToCharArray();
             var influxDBClient = InfluxDBClientFactory.CreateV1("https://influxdb.infoinnova.net", "homeassistant", Token, "homeassistant", null);
