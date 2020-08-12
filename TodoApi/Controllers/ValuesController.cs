@@ -51,6 +51,13 @@ namespace TodoApi.Controllers
             // Serialize JSON
             var objTLM = Models.Tools.parseTLM(tlm);
 
+            // Just Continue if GPS coordinates are different from 0
+            if (objTLM.lat == 0 && objTLM.lon == 0 && objTLM.alt == 0)
+            {
+                // There is no GPS data yet
+                return Ok();
+            }
+
             // Send data to ABRP (read from config)
             var URL = Program.AppConfig.ABRPUrl;
 
