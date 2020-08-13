@@ -57,6 +57,13 @@ namespace TodoApi.Models
             return myJsonObject;
         }
 
+        public static string serializeReturnTLM(Models.returnTLM tlm)
+        {
+            var newTLM = JsonConvert.SerializeObject(tlm);
+            return newTLM;
+        }
+
+
         private static void setCounter(int Counter)
         {
             initCounter();

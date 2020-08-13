@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 
 namespace TodoApi.Controllers
 {
@@ -58,6 +59,11 @@ namespace TodoApi.Controllers
                 return Ok();
             }
 
+
+            // Reparse TLM
+            var returnTLM = new Models.returnTLM(objTLM); 
+            string newTLM = Models.Tools.serializeReturnTLM(returnTLM);
+
             // Send data to ABRP (read from config)
             var URL = Program.AppConfig.ABRPUrl;
 
@@ -66,7 +72,7 @@ namespace TodoApi.Controllers
             urljson += "&";
             urljson += "token=" + token;
             urljson += "&";
-            urljson += "tlm=" + tlm;
+            urljson += "tlm=" + newTLM;
 
             int Counter = 0;
             try
