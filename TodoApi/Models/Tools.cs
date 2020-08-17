@@ -73,7 +73,13 @@ namespace TodoApi.Models
             return myJsonObject;
         }
 
-        public static string serializeReturnTLM(Models.returnTLM tlm)
+        //public static string serializeReturnTLM(Models.returnTLM tlm)
+        //{
+        //    var newTLM = JsonConvert.SerializeObject(tlm);
+        //    return newTLM;
+        //}
+
+        public static string serializeReturnTLM(Models.tlm tlm)
         {
             var newTLM = JsonConvert.SerializeObject(tlm);
             return newTLM;
@@ -137,7 +143,16 @@ namespace TodoApi.Models
             {
 
                 // Let's calculate the distance between the previous point.
-                var distance = Models.GeoLocation.getDistance(objTLM.lat, objTLM.lon);
+                var distance = Models.PreviousData.getDistance(objTLM.lat, objTLM.lon);
+
+                // Let's calculate Consumption kWh
+                // Car Battery degradation
+                var percentUtil = Program.AppConfig.CAR_BATTERY * objTLM.soh / 100;
+                var ConsumptionkWh = Models.PreviousData.getDiffSOC(objTLM.soc) * percentUtil / 100;
+
+                // Let's calculate Consumption kWh/100
+                // Not Necesary, it's calculated in Grafana
+                // var ConsumptionkWh100 = ConsumptionkWh / (distance / 1000) * 100;
 
                 //
                 // Write by Point
@@ -157,6 +172,8 @@ namespace TodoApi.Models
                     .Field("speed", objTLM.speed)
                     .Field("utc", objTLM.utc)
                     .Field("distance", distance)
+                    .Field("consumptionkwh", ConsumptionkWh)
+                    //.Field("Consumptionkwh100", ConsumptionkWh100)
                     .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
 
                 writeApi.WritePoint(point);
@@ -189,9 +206,10 @@ namespace TodoApi.Models
             objTLM.utc = Convert.ToInt32(DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds / 1000);
 
             // Reparse TLM
-            var returnTLM = new Models.returnTLM(objTLM);
-            string newTLM = Models.Tools.serializeReturnTLM(returnTLM);
-
+            //var returnTLM = new Models.returnTLM(objTLM);
+            // string newTLM = Models.Tools.serializeReturnTLM(objTLM);
+            string newTLM = Models.Tools.serializeReturnTLM(objTLM);
+            
             // Send data to ABRP (read from config)
             var URL = Program.AppConfig.ABRPUrl;
 
@@ -201,8 +219,7 @@ namespace TodoApi.Models
             urljson += "token=" + Program.AppConfig.ABRP_token;
             urljson += "&";
             urljson += "tlm=" + newTLM;
-
-
+            
             try
             {
                 using (var client = new HttpClient())
