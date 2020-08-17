@@ -42,6 +42,7 @@ namespace TodoApi.Models
         public async Task HandleApplicationMessageReceivedAsync(MqttApplicationMessageReceivedEventArgs eventArgs)
         {
             var tlm = Encoding.UTF8.GetString(eventArgs.ApplicationMessage.Payload);
+            Tools.SendData2ABRP(tlm);
             if (Program.AppConfig.DebugMode)
             {
                 Tools.guardarLog($"+ Topic = {eventArgs.ApplicationMessage.Topic}");
@@ -49,9 +50,6 @@ namespace TodoApi.Models
                 Tools.guardarLog($"+ QoS = {eventArgs.ApplicationMessage.QualityOfServiceLevel}");
                 Tools.guardarLog($"+ Retain = {eventArgs.ApplicationMessage.Retain}");
             }
-
-            Tools.SendData2ABRP(tlm);
-                        
             await Task.CompletedTask;
         }
 

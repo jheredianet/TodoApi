@@ -135,6 +135,10 @@ namespace TodoApi.Models
 
             using (var writeApi = influxDBClient.GetWriteApi())
             {
+
+                // Let's calculate the distance between the previous point.
+                var distance = Models.GeoLocation.getDistance(objTLM.lat, objTLM.lon);
+
                 //
                 // Write by Point
                 //
@@ -152,7 +156,8 @@ namespace TodoApi.Models
                     .Field("soh", objTLM.soh)
                     .Field("speed", objTLM.speed)
                     .Field("utc", objTLM.utc)
-                    .Timestamp(DateTime.UtcNow.AddSeconds(-5), WritePrecision.Ns);
+                    .Field("distance", distance)
+                    .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
 
                 writeApi.WritePoint(point);
 
