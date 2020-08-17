@@ -4,6 +4,7 @@ using InfluxDB.Client.Writes;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Net.Http;
 using System.Reflection;
 
 namespace TodoApi.Models
@@ -11,6 +12,7 @@ namespace TodoApi.Models
     public class Tools
     {
         private static string counterFile;
+
         public static void guardarLog(string Texto)
         {
             using (StreamWriter w = System.IO.File.AppendText(FicheroLog()))
@@ -53,7 +55,21 @@ namespace TodoApi.Models
 
         public static Models.tlm parseTLM(string tlm)
         {
-            var myJsonObject = JsonConvert.DeserializeObject<Models.tlm>(tlm);
+            Models.tlm myJsonObject = null;
+            try
+            {
+                myJsonObject = JsonConvert.DeserializeObject<Models.tlm>(tlm);
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    msg += " | " + ex.InnerException.Message;
+                }
+                Models.Tools.guardarLog(msg);
+            }
+
             return myJsonObject;
         }
 
@@ -62,7 +78,6 @@ namespace TodoApi.Models
             var newTLM = JsonConvert.SerializeObject(tlm);
             return newTLM;
         }
-
 
         private static void setCounter(int Counter)
         {
@@ -115,7 +130,8 @@ namespace TodoApi.Models
         public static void SaveDataIntoInfluxDB(tlm objTLM)
         {
             char[] Token = Program.AppConfig.InfluxDBToken.ToCharArray();
-            var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer, Program.AppConfig.InfluxDBUser, Token,Program.AppConfig.InfluxDBDataBase, null);
+            var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer,
+                Program.AppConfig.InfluxDBUser, Token, Program.AppConfig.InfluxDBDataBase, null);
 
             using (var writeApi = influxDBClient.GetWriteApi())
             {
@@ -143,5 +159,111 @@ namespace TodoApi.Models
             }
             influxDBClient.Dispose();
         }
+
+        public static int SendData2ABRP(string tlm)
+        {
+            int Counter = 0;
+
+            // Serialize JSON
+            var objTLM = Models.Tools.parseTLM(tlm);
+
+            if (objTLM == null)
+            {
+                return 0; // cannot parse
+            }
+
+            // Just Continue if GPS coordinates are different from 0
+            if (objTLM.lat == 0 && objTLM.lon == 0 && objTLM.alt == 0)
+            {
+                // There is no GPS data yet
+                return 0;
+            }
+
+            // Fill utc and car model
+            objTLM.car_model = Program.AppConfig.CAR_MODEL;
+            objTLM.utc = Convert.ToInt32(DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds / 1000);
+
+            // Reparse TLM
+            var returnTLM = new Models.returnTLM(objTLM);
+            string newTLM = Models.Tools.serializeReturnTLM(returnTLM);
+
+            // Send data to ABRP (read from config)
+            var URL = Program.AppConfig.ABRPUrl;
+
+            var urljson = URL += "?";
+            urljson += "api_key=" + Program.AppConfig.ABRP_api_key;
+            urljson += "&";
+            urljson += "token=" + Program.AppConfig.ABRP_token;
+            urljson += "&";
+            urljson += "tlm=" + newTLM;
+
+
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(urljson);
+                    //HTTP GET
+                    var responseTask = client.GetAsync("");
+                    responseTask.Wait();
+
+                    var result = responseTask.Result;
+                    var log = result.Version + " | " + result.ReasonPhrase + " | " + result.RequestMessage;
+                    if (result.IsSuccessStatusCode)
+                    {
+                        // Ha ido bien
+                        Counter = Models.Tools.addCount();
+
+                    }
+                    if (Program.AppConfig.DebugMode)
+                    {
+                        Models.Tools.guardarLog(log);
+                    }
+                }
+
+                // Guardar los datos en InfluxDB
+                Models.Tools.SaveDataIntoInfluxDB(objTLM);
+            }
+            catch (Exception ex)
+            {
+                string msg = ex.Message;
+                if (ex.InnerException != null)
+                {
+                    msg += " | " + ex.InnerException.Message;
+                }
+                Models.Tools.guardarLog(msg);
+            }
+
+            return Counter;
+        }
+
+
+        //public static async System.Threading.Tasks.Task ReadDataFromInfluxDBAsync(tlm objTLM)
+        //{
+        //    char[] Token = Program.AppConfig.InfluxDBToken.ToCharArray();
+        //    var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer,
+        //        Program.AppConfig.InfluxDBUser, Token, Program.AppConfig.InfluxDBDataBase, null);
+
+        //    //
+        //    // Query data
+        //    // 
+
+        //    var flux = "from(bucket:\"homeassistant/autogen\") " +
+        //        "|> range(start: -48h) " +
+        //        "|> filter(fn: (r) => r._measurement == \"ovms\" and (r._field == \"lat\" or r._field == \"lon\"))";
+
+        //    var fluxTables = await influxDBClient.GetQueryApi().QueryAsync(flux);
+        //    fluxTables.ForEach(fluxTable =>
+        //    {
+        //        var fluxRecords = fluxTable.Records;
+        //        fluxRecords.ForEach(fluxRecord =>
+        //        {
+        //            Console.WriteLine($"{fluxRecord.GetTime()}: {fluxRecord.GetValue()}");
+        //        });
+        //    });
+
+        //    influxDBClient.Dispose();
+
+        //}
     }
 }

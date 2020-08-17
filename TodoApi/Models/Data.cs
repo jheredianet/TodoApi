@@ -12,11 +12,18 @@ namespace TodoApi.Models
     public class GlobalSettings
     {
         public string ABRPUrl { get; set; }
+        public string ABRP_api_key { get; set; }
+        public string ABRP_token { get; set; }
+        public string CAR_MODEL { get; set; }
         public bool DebugMode { get; set; }
         public string InfluxDBToken { get; set; }
         public string InfluxDBUser { get; set; }
         public string InfluxDBDataBase { get; set; }
         public string InfluxDBServer { get; set; }
+        public string CLOUDMQTT_SERVER { get; set; }
+        public int CLOUDMQTT_PORT { get; set; }
+        public string CLOUDMQTT_USER { get; set; }
+        public string CLOUDMQTT_PASSWORD { get; set; }
     }
 
     public class tlm
@@ -25,7 +32,23 @@ namespace TodoApi.Models
         // "lat":"40.346","lon":"-3.676","alt":"587.8",
         // "ext_temp":29.5,"is_charging":0,"batt_temp":33,"voltage":355.5,"current":0.3,"power":"0.1"}
 
-        public int utc { get; set; }
+
+        // {"is_charging": no, "lat": 40.3458, "lon": -3.67613, "alt": 585, "soc": 70.5, "soh": 100, "speed": , "ext_temp": 25.5, "batt_temp": 27, "voltage": 349.2,"current": 0.1, "power": 0.03492}
+
+    //'ovms/jchm/KonaEV/metric/v/c/charging'
+    //'ovms/jchm/KonaEV/metric/v/p/latitude'
+    //'ovms/jchm/KonaEV/metric/v/p/longitude'
+    //'ovms/jchm/KonaEV/metric/v/p/altitude'
+    //'ovms/jchm/KonaEV/metric/v/b/soc'
+    //'ovms/jchm/KonaEV/metric/v/b/soh'
+    //'ovms/jchm/KonaEV/metric/v/p/speed'
+    //'ovms/jchm/KonaEV/metric/v/e/temp'
+    //'ovms/jchm/KonaEV/metric/v/b/temp'
+    //'ovms/jchm/KonaEV/metric/v/b/voltage'
+    //'ovms/jchm/KonaEV/metric/v/b/current'
+    //'ovms/jchm/KonaEV/metric/v/b/power'
+
+    public int utc { get; set; }
         public string car_model { get; set; }
         public bool is_charging { get; set; }
         public double lat { get; set; }
@@ -41,7 +64,7 @@ namespace TodoApi.Models
         public double power { get; set; }
     }
 
-    public class returnTLM: tlm
+    public class returnTLM : tlm
     {
         public new int soc { get; set; }
 
@@ -61,6 +84,6 @@ namespace TodoApi.Models
             this.speed = t.speed;
             this.utc = t.utc;
             this.voltage = t.voltage;
-        }       
+        }
     }
 }

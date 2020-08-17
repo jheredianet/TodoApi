@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using System.Text;
+using Microsoft.AspNetCore.Mvc;
 
 namespace TodoApi.Controllers
 {
@@ -48,68 +46,7 @@ namespace TodoApi.Controllers
             {
                 return BadRequest("ID. not valid");
             }
-
-            // Serialize JSON
-            var objTLM = Models.Tools.parseTLM(tlm);
-
-            // Just Continue if GPS coordinates are different from 0
-            if (objTLM.lat == 0 && objTLM.lon == 0 && objTLM.alt == 0)
-            {
-                // There is no GPS data yet
-                return Ok();
-            }
-
-
-            // Reparse TLM
-            var returnTLM = new Models.returnTLM(objTLM); 
-            string newTLM = Models.Tools.serializeReturnTLM(returnTLM);
-
-            // Send data to ABRP (read from config)
-            var URL = Program.AppConfig.ABRPUrl;
-
-            var urljson = URL += "?";
-            urljson += "api_key=" + api_key;
-            urljson += "&";
-            urljson += "token=" + token;
-            urljson += "&";
-            urljson += "tlm=" + newTLM;
-
-            int Counter = 0;
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(urljson);
-                    //HTTP GET
-                    var responseTask = client.GetAsync("");
-                    responseTask.Wait();
-
-                    var result = responseTask.Result;
-                    var log = result.Version + " | " + result.ReasonPhrase + " | " + result.RequestMessage;
-                    if (result.IsSuccessStatusCode)
-                    {
-                        // Ha ido bien
-                        Counter = Models.Tools.addCount();
-
-                    }
-                    Models.Tools.guardarLog(log);
-                }
-
-                // Guardar los datos en InfluxDB
-                Models.Tools.SaveDataIntoInfluxDB(objTLM);
-            }
-            catch (Exception ex)
-            {
-                string msg = ex.Message;
-                if (ex.InnerException != null)
-                {
-                    msg += " | " + ex.InnerException.Message;
-                }
-
-                Models.Tools.guardarLog(msg);
-                return BadRequest(ex);
-            }
-
+            int Counter = Models.Tools.SendData2ABRP(tlm);
             return Ok(Counter);
 
         }
