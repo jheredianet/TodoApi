@@ -9,6 +9,12 @@ namespace TodoApi.Models
         public int Total { get; set; }
     }
 
+    public class CarState
+    {
+        public bool isSending2ABRP { get; set; }
+        public bool isOn { get; set; }
+    }
+
     public class GlobalSettings
     {
         public string ABRPUrl { get; set; }
@@ -17,6 +23,7 @@ namespace TodoApi.Models
         public string CAR_MODEL { get; set; }
         public double CAR_BATTERY { get; set; }
         public bool DebugMode { get; set; }
+        public int TimerSeconds { get; set; }
         public string InfluxDBToken { get; set; }
         public string InfluxDBUser { get; set; }
         public string InfluxDBDataBase { get; set; }
@@ -34,7 +41,8 @@ namespace TodoApi.Models
         // "ext_temp":29.5,"is_charging":0,"batt_temp":33,"voltage":355.5,"current":0.3,"power":"0.1"}
 
 
-        // {"is_charging": no, "lat": 40.3458, "lon": -3.67613, "alt": 585, "soc": 70.5, "soh": 100, "speed": , "ext_temp": 25.5, "batt_temp": 27, "voltage": 349.2,"current": 0.1, "power": 0.03492}
+        // {"is_charging": no, "lat": 40.3458, "lon": -3.67613, "alt": 585, "soc": 70.5, "soh": 100,
+        // "speed": , "ext_temp": 25.5, "batt_temp": 27, "voltage": 349.2,"current": 0.1, "power": 0.03492}
 
         //'ovms/jchm/KonaEV/metric/v/c/charging'
         //'ovms/jchm/KonaEV/metric/v/p/latitude'
@@ -63,6 +71,55 @@ namespace TodoApi.Models
         public double voltage { get; set; }
         public double current { get; set; }
         public double power { get; set; }
+
+        public void setData(string Topic, string Value)
+        {
+            switch (Topic)
+            {
+                case "ovms/jchm/KonaEV/metric/v/c/charging":
+                    this.is_charging = Value.Equals("yes") ? true : false;
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/p/latitude":
+                    this.lat = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/p/longitude":
+                    this.lon = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/p/altitude":
+                    this.alt = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/soc":
+                    this.soc = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/soh":
+                    this.soh = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/p/speed":
+                    this.speed = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/e/temp":
+                    this.ext_temp = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/temp":
+                    this.batt_temp = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/voltage":
+                    this.voltage = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/current":
+                    this.current = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/b/power":
+                    this.power = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/e/on":
+                    Program.carState.isOn = Value.Equals("no") ? false : true;
+                    break;
+                case "abrp/status":
+                    Program.carState.isSending2ABRP = Value.Equals("1") ? true : false;
+                    break;
+            }
+        }
     }
 
     //public class returnTLM : tlm
