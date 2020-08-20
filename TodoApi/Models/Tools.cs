@@ -173,6 +173,7 @@ namespace TodoApi.Models
                     .Field("utc", objTLM.utc)
                     .Field("distance", distance)
                     .Field("consumptionkwh", ConsumptionkWh)
+                    .Field("voltaje", objTLM.voltage)
                     //.Field("Consumptionkwh100", ConsumptionkWh100)
                     .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
 
