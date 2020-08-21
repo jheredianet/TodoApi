@@ -24,11 +24,11 @@ namespace TodoApi
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // Start MQTT client
-            services.AddMqttClientHostedService();
-            services.AddSingleton<ExternalService>();
+            //services.AddMqttClientHostedService();
+            //services.AddSingleton<ExternalService>();
 
             // Start Timer
-            services.AddHostedService<Models.TimedHostedService>();
+            //services.AddHostedService<Models.TimedHostedService>();
             
         }
 

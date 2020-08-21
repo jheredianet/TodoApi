@@ -40,7 +40,8 @@ namespace TodoApi.Controllers
 
         // GET api/values/0
         [HttpGet("{id}")]
-        public ActionResult<string> Get(int id, string tlm, string token, string api_key)
+        //public ActionResult<string> Get(int id, string tlm, string token, string api_key)
+        public ActionResult<string> Get(int id, string tlm)
         {
             if (id != 0)
             {

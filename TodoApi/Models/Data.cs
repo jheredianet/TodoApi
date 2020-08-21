@@ -72,6 +72,7 @@ namespace TodoApi.Models
         public double current { get; set; }
         public double power { get; set; }
 
+        // Used with MQTT  
         public void setData(string Topic, string Value)
         {
             switch (Topic)

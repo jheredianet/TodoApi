@@ -154,6 +154,9 @@ namespace TodoApi.Models
                 // Not Necesary, it's calculated in Grafana
                 // var ConsumptionkWh100 = ConsumptionkWh / (distance / 1000) * 100;
 
+                // Let's conver the UTC to datetime
+                var timeFromOVMS = (new DateTime(1970, 1, 1)).AddMilliseconds(objTLM.utc * 1000.0);
+
                 //
                 // Write by Point
                 //
@@ -173,9 +176,9 @@ namespace TodoApi.Models
                     .Field("utc", objTLM.utc)
                     .Field("distance", distance)
                     .Field("consumptionkwh", ConsumptionkWh)
-                    .Field("voltaje", objTLM.voltage)
+                    .Field("voltage", objTLM.voltage)
                     //.Field("Consumptionkwh100", ConsumptionkWh100)
-                    .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
+                    .Timestamp(timeFromOVMS, WritePrecision.Ns);
 
                 writeApi.WritePoint(point);
 
@@ -204,13 +207,14 @@ namespace TodoApi.Models
 
             // Fill utc and car model
             objTLM.car_model = Program.AppConfig.CAR_MODEL;
-            objTLM.utc = Convert.ToInt32(DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds / 1000);
+            // utc is comming from tlm
+            //objTLM.utc = Convert.ToInt32(DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds / 1000);
 
             // Reparse TLM
             // var returnTLM = new Models.returnTLM(objTLM);
             // string newTLM = Models.Tools.serializeReturnTLM(objTLM);
             string newTLM = Models.Tools.serializeReturnTLM(objTLM);
-            
+
             // Send data to ABRP (read from config)
             var URL = Program.AppConfig.ABRPUrl;
 
@@ -220,7 +224,7 @@ namespace TodoApi.Models
             urljson += "token=" + Program.AppConfig.ABRP_token;
             urljson += "&";
             urljson += "tlm=" + newTLM;
-            
+
             try
             {
                 using (var client = new HttpClient())
