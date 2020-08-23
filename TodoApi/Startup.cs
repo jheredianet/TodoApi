@@ -13,7 +13,7 @@ namespace TodoApi
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
-            MapConfiguration();
+            //MapConfiguration();
         }
 
         public IConfiguration Configuration { get; }

@@ -10,7 +10,7 @@ namespace TodoApi.Models
 
         public static double getDistance(double lat, double lng)
         {
-            double distanceBetween = 0.001; // 10 Centimos de precisión en caso de que no haya localización previa 
+            double distanceBetween = 0.1; // 10 decimas de precisión en caso de que no haya localización previa 
             GeoCoordinate currentLocation = new GeoCoordinate(lat, lng);
             if (lastLocation != null)
             {
@@ -23,7 +23,7 @@ namespace TodoApi.Models
 
         public static double getDiffSOC(double soc)
         {
-            double diff = 0.0001;
+            double diff = 0.1;
             if (lastSOC > 0)
             {
                 diff = Math.Abs(soc - lastSOC);

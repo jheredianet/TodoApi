@@ -67,7 +67,7 @@ namespace TodoApi.Models
                 {
                     msg += " | " + ex.InnerException.Message;
                 }
-                Models.Tools.guardarLog(msg);
+                Models.Tools.guardarLog("parseTLM:" + msg);
             }
 
             return myJsonObject;
@@ -155,7 +155,7 @@ namespace TodoApi.Models
                 // var ConsumptionkWh100 = ConsumptionkWh / (distance / 1000) * 100;
 
                 // Let's conver the UTC to datetime
-                var timeFromOVMS = (new DateTime(1970, 1, 1)).AddMilliseconds(objTLM.utc * 1000.0);
+                var timeFromOVMS = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddMilliseconds(objTLM.utc * 1000.0);
 
                 //
                 // Write by Point
@@ -253,7 +253,7 @@ namespace TodoApi.Models
             }
             catch (Exception ex)
             {
-                string msg = ex.Message;
+                string msg = "Source: " + ex.Source + " | " + ex.Message;
                 if (ex.InnerException != null)
                 {
                     msg += " | " + ex.InnerException.Message;
