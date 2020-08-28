@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Text;
 
 namespace TodoApi.Models
 {
@@ -262,6 +263,21 @@ namespace TodoApi.Models
             }
 
             return Counter;
+        }
+
+        public static void sendData2HA(string Sensor, string jsonInString)
+        {
+            var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Program.AppConfig.HomeAssistantToken);
+            var uri = Program.AppConfig.HomeAssistantServer + "/api/states/" + Sensor;
+            var response = client.PostAsync(uri, new StringContent(jsonInString, Encoding.UTF8, "application/json")).Result;
+            if (!response.IsSuccessStatusCode)
+            {
+                if (Program.AppConfig.DebugMode)
+                {
+                    Models.Tools.guardarLog("Error sending to HA: " + response.ToString());
+                }
+            }
         }
 
 

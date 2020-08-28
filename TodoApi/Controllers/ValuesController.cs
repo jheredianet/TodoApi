@@ -41,15 +41,36 @@ namespace TodoApi.Controllers
         // GET api/values/0
         [HttpGet("{id}")]
         //public ActionResult<string> Get(int id, string tlm, string token, string api_key)
-        public ActionResult<string> Get(int id, string tlm)
+        public ActionResult<string> Get(int id, string tlm, string isActive)
         {
+            bool Estado = isActive == "on";
+
+            if (Program.AppConfig.DebugMode)
+            {
+                Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
+                    + " | Received: isActive: " + isActive);
+            }
+
             if (id != 0)
             {
                 return BadRequest("ID. not valid");
             }
-            int Counter = Models.Tools.SendData2ABRP(tlm);
-            return Ok(Counter);
 
+            // Send Data 
+            int Counter = Models.Tools.SendData2ABRP(tlm);
+
+
+            if (Program.carState.isSending2ABRP != Estado)
+            {
+                // Call HomeAssistant only if its different
+                string jsonData = "{" + string.Format("{1}state{1}: {0}", Estado ? 1 : 0, '"') + "}";
+                Models.Tools.sendData2HA("sensor.abrp", jsonData);
+                Program.carState.isSending2ABRP = Estado;
+            }
+
+
+
+            return Ok(Counter);
         }
     }
 }

@@ -32,6 +32,8 @@ namespace TodoApi.Models
         public int CLOUDMQTT_PORT { get; set; }
         public string CLOUDMQTT_USER { get; set; }
         public string CLOUDMQTT_PASSWORD { get; set; }
+        public string HomeAssistantServer { get; set; }
+        public string HomeAssistantToken { get; set; }
     }
 
     public class tlm
