@@ -18,7 +18,8 @@ namespace TodoApi.Controllers
 
         // GET api/values/getcounter
         [HttpGet("GetCounter", Name = "GetCounter")]
-        public ActionResult<Models.CounterData> GetCounter()
+        // public ActionResult<Models.CounterData> GetCounter()
+        public ActionResult<string> GetCounter()
         {
             Models.CounterData Counter = new Models.CounterData();
 
@@ -35,7 +36,9 @@ namespace TodoApi.Controllers
             //{
             //    Models.Tools.guardarLog(DateTime.Now.ToString() + " - " + Environment.MachineName);
             //}
-            return Counter;
+
+            return string.Format("Last update: {0} seconds ago. Total records: {1}.",
+                Counter.LastUpdateInSeconds, Counter.Total);
         }
 
         // GET api/values/0
