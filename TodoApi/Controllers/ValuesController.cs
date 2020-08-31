@@ -48,12 +48,6 @@ namespace TodoApi.Controllers
         {
             bool Estado = isActive == "on";
 
-            if (Program.AppConfig.DebugMode)
-            {
-                Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
-                    + " | Received: isActive: " + isActive);
-            }
-
             if (id != 0)
             {
                 return BadRequest("ID. not valid");
@@ -68,10 +62,12 @@ namespace TodoApi.Controllers
                 // Call HomeAssistant only if its different
                 string jsonData = "{" + string.Format("{1}state{1}: {0}", Estado ? 1 : 0, '"') + "}";
                 Models.Tools.sendData2HA("sensor.abrp", jsonData);
+
+                Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
+                    + " | Received: isActive: " + isActive);
+
                 Program.carState.isSending2ABRP = Estado;
             }
-
-
 
             return Ok(Counter);
         }

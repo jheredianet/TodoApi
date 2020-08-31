@@ -246,11 +246,14 @@ namespace TodoApi.Models
                     if (Program.AppConfig.DebugMode)
                     {
                         Models.Tools.guardarLog(log);
+                        // Guardar en log los datos enviados
+                        // Models.Tools.guardarLog(newTLM);
                     }
                 }
-
                 // Guardar los datos en InfluxDB
                 Models.Tools.SaveDataIntoInfluxDB(objTLM);
+
+                
             }
             catch (Exception ex)
             {
