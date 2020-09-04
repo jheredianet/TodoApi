@@ -187,17 +187,9 @@ namespace TodoApi.Models
             influxDBClient.Dispose();
         }
 
-        public static int SendData2ABRP(string tlm)
+        public static int SendData2ABRP(Models.tlm objTLM)
         {
             int Counter = 0;
-
-            // Serialize JSON
-            var objTLM = Models.Tools.parseTLM(tlm);
-
-            if (objTLM == null)
-            {
-                return 0; // cannot parse
-            }
 
             // Just Continue if GPS coordinates are different from 0
             if (objTLM.lat == 0 && objTLM.lon == 0 && objTLM.alt == 0)

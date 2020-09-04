@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text;
 using Microsoft.AspNetCore.Mvc;
 
 namespace TodoApi.Controllers
@@ -53,8 +54,16 @@ namespace TodoApi.Controllers
                 return BadRequest("ID. not valid");
             }
 
+            // Serialize JSON
+            var objTLM = Models.Tools.parseTLM(tlm);
+
+            if (objTLM == null)
+            {
+                return BadRequest("Cannot parse received TLM");
+            }
+
             // Send Data 
-            int Counter = Models.Tools.SendData2ABRP(tlm);
+            int Counter = Models.Tools.SendData2ABRP(objTLM);
 
 
             if (Program.carState.isSending2ABRP != Estado)
@@ -63,8 +72,14 @@ namespace TodoApi.Controllers
                 string jsonData = "{" + string.Format("{1}state{1}: {0}", Estado ? 1 : 0, '"') + "}";
                 Models.Tools.sendData2HA("sensor.abrp", jsonData);
 
-                Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
-                    + " | Received: isActive: " + isActive);
+                // Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
+                //     + " | Received: isActive: " + isActive);
+
+                StringBuilder msg = new StringBuilder();
+                msg.Append(Estado ? "Start " : "Stop ");
+                msg.AppendLine("Sending Data to ABRP.");
+                msg.AppendLine(Models.Tools.serializeReturnTLM(objTLM));
+                Models.Tools.guardarLog(msg.ToString());
 
                 Program.carState.isSending2ABRP = Estado;
             }

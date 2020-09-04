@@ -26,7 +26,7 @@ namespace TodoApi.Models
             {
                 if (Program.carState.isOn || Program.currentTLM.is_charging)
                 {
-                    Tools.SendData2ABRP(Models.Tools.serializeReturnTLM(Program.currentTLM));
+                    // Tools.SendData2ABRP(Models.Tools.serializeReturnTLM(Program.currentTLM));
                 }
             }
         }
