@@ -69,6 +69,12 @@ namespace TodoApi.Controllers
                 Program.carState.isSending2ABRP = Estado;
             }
 
+            // Reset Previous Data when is stopping sending
+            if (!Estado)
+            {
+                Models.PreviousData.resetData();
+            }
+
             return Ok(Counter);
         }
     }

@@ -31,5 +31,12 @@ namespace TodoApi.Models
             lastSOC = soc;
             return diff;
         }
+
+        public static void resetData()
+        {
+            // Inicializamos los valores
+            lastSOC = 0;
+            lastLocation = null;
+        }
     }
 }
