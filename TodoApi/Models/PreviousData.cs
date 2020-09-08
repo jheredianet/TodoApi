@@ -38,5 +38,10 @@ namespace TodoApi.Models
             lastSOC = 0;
             lastLocation = null;
         }
+
+        public static double getSOC()
+        {
+            return lastSOC;
+        }
     }
 }

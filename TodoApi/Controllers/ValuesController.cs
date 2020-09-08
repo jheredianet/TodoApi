@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net.Http;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,6 +14,15 @@ namespace TodoApi.Controllers
         public ActionResult<IEnumerable<string>> Get()
         {
             return new string[] { DateTime.Now.ToString(), Environment.MachineName };
+        }
+
+        // Post api/values/sendcommand
+        [HttpPost("sendCommand", Name = "sendCommand")]
+        
+        // public ActionResult<Models.CounterData> GetCounter()
+        public ActionResult<string> sendCommand(string Command)
+        {
+            return Models.Tools.SendData2OVMS(Command);
         }
 
         // GET api/values/getcounter
@@ -38,8 +46,11 @@ namespace TodoApi.Controllers
             //    Models.Tools.guardarLog(DateTime.Now.ToString() + " - " + Environment.MachineName);
             //}
 
-            return string.Format("Last update: {0} seconds ago. Total records: {1}.",
-                Counter.LastUpdateInSeconds, Counter.Total);
+            return string.Format("Last update: {0} {1} ago. Total records: {2}. State of Charge: {3}%",
+                Counter.LastUpdateInSeconds < 60 ? Counter.LastUpdateInSeconds: Convert.ToInt32(Counter.LastUpdateInSeconds/60),
+                Counter.LastUpdateInSeconds < 60 ? "seconds" : "minutes",
+                Counter.Total,
+                Models.PreviousData.getSOC());
         }
 
         // GET api/values/0

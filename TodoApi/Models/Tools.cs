@@ -1,8 +1,10 @@
 ﻿using InfluxDB.Client;
 using InfluxDB.Client.Api.Domain;
 using InfluxDB.Client.Writes;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
@@ -38,6 +40,55 @@ namespace TodoApi.Models
                 System.IO.File.Create(fichero).Close();
             }
             return fichero;
+        }
+
+        public static ActionResult<string> SendData2OVMS(string command)
+        {
+            // List of Posible commands
+
+            string resultContent;
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = new Uri(Program.AppConfig.OVMSUrl);
+                var content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("noidsave", ""),
+                    new KeyValuePair<string, string>("_mod", "ovms/cmd"),
+                    new KeyValuePair<string, string>("_vehicleid", Program.AppConfig.OVMSid),
+                    new KeyValuePair<string, string>("_carpass", Program.AppConfig.OVMSpass),
+                    new KeyValuePair<string, string>("_cmd", command),
+                });
+                var response = client.PostAsync("", content);
+                resultContent =
+                    response.Result.Content.ReadAsStringAsync().Result.Replace("<span>",string.Empty).Replace("</span>", string.Empty).Trim();
+                
+                if (!response.IsCompletedSuccessfully)
+                {
+                    resultContent = "Error sending to OVMS: " + resultContent;
+                    Models.Tools.guardarLog(resultContent);
+                }
+                else
+                {
+                    Models.Tools.guardarLog("Command sent to OVMS: " + command);
+                    Models.Tools.guardarLog("Result: " + resultContent);
+                    // Parse result (if we get a lot of data, just return a short response)
+                    if (resultContent.Contains("bat temp"))
+                    {
+                        string[] lines = resultContent.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                        var newresult = string.Empty;
+                        foreach (var line in lines)
+                        {
+                            if (!line.Contains("="))
+                            {
+                                newresult += line;
+                            }
+                        }
+                        resultContent = newresult;
+                    }
+                }
+
+            }
+            return resultContent;
         }
 
         public static DateTime getCounterFileDate()
@@ -245,7 +296,7 @@ namespace TodoApi.Models
                 // Guardar los datos en InfluxDB
                 Models.Tools.SaveDataIntoInfluxDB(objTLM);
 
-                
+
             }
             catch (Exception ex)
             {
@@ -268,10 +319,10 @@ namespace TodoApi.Models
             var response = client.PostAsync(uri, new StringContent(jsonInString, Encoding.UTF8, "application/json")).Result;
             if (!response.IsSuccessStatusCode)
             {
-                if (Program.AppConfig.DebugMode)
-                {
-                    Models.Tools.guardarLog("Error sending to HA: " + response.ToString());
-                }
+                //if (Program.AppConfig.DebugMode)
+                //{
+                Models.Tools.guardarLog("Error sending to HA: " + response.ToString());
+                //}
             }
         }
 

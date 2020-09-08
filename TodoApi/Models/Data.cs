@@ -20,6 +20,9 @@ namespace TodoApi.Models
         public string ABRPUrl { get; set; }
         public string ABRP_api_key { get; set; }
         public string ABRP_token { get; set; }
+        public string OVMSUrl { get; set; }
+        public string OVMSid { get; set; }
+        public string OVMSpass { get; set; }
         public string CAR_MODEL { get; set; }
         public double CAR_BATTERY { get; set; }
         public bool DebugMode { get; set; }
