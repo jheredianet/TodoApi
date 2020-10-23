@@ -93,19 +93,19 @@ namespace TodoApi.Models
 
         public static DateTime getCounterFileDate()
         {
-            initCounter();
+            InitCounter();
             return System.IO.File.GetLastWriteTime(counterFile);
         }
 
-        public static int addCount()
+        public static int AddCount()
         {
-            var i = getCounter();
+            var i = GetCounter();
             i++;
-            setCounter(i);
+            SetCounter(i);
             return i;
         }
 
-        public static Models.tlm parseTLM(string tlm)
+        public static Models.tlm ParseTLM(string tlm)
         {
             Models.tlm myJsonObject = null;
             try
@@ -125,21 +125,15 @@ namespace TodoApi.Models
             return myJsonObject;
         }
 
-        //public static string serializeReturnTLM(Models.returnTLM tlm)
-        //{
-        //    var newTLM = JsonConvert.SerializeObject(tlm);
-        //    return newTLM;
-        //}
-
-        public static string serializeReturnTLM(Models.tlm tlm)
+        public static string SerializeReturnTLM(returnTLM tlm)
         {
-            var newTLM = JsonConvert.SerializeObject(tlm);
+            string newTLM = JsonConvert.SerializeObject(tlm);
             return newTLM;
         }
 
-        private static void setCounter(int Counter)
+        private static void SetCounter(int Counter)
         {
-            initCounter();
+            InitCounter();
             TextWriter tw = new StreamWriter(counterFile);
             // Write counter to file
             tw.WriteLine(Counter);
@@ -149,9 +143,9 @@ namespace TodoApi.Models
             tw.Close();
         }
 
-        public static int getCounter()
+        public static int GetCounter()
         {
-            initCounter();
+            InitCounter();
 
             TextReader tr = new StreamReader(counterFile);
             // read file
@@ -176,7 +170,7 @@ namespace TodoApi.Models
             return config;
         }
 
-        private static void initCounter()
+        private static void InitCounter()
         {
             counterFile = Path.Combine(Path.GetDirectoryName(FicheroLog()), "counter.txt");
             if (!System.IO.File.Exists(counterFile))
@@ -238,7 +232,7 @@ namespace TodoApi.Models
             influxDBClient.Dispose();
         }
 
-        public static int SendData2ABRP(Models.tlm objTLM)
+        public static int SendData2ABRP(tlm objTLM)
         {
             int Counter = 0;
 
@@ -255,9 +249,8 @@ namespace TodoApi.Models
             //objTLM.utc = Convert.ToInt32(DateTime.UtcNow.Subtract(DateTime.MinValue.AddYears(1969)).TotalMilliseconds / 1000);
 
             // Reparse TLM
-            // var returnTLM = new Models.returnTLM(objTLM);
-            // string newTLM = Models.Tools.serializeReturnTLM(objTLM);
-            string newTLM = Models.Tools.serializeReturnTLM(objTLM);
+            var returnTLM = new returnTLM(objTLM);
+            string stringTLMParameter = SerializeReturnTLM(returnTLM);
 
             // Send data to ABRP (read from config)
             var URL = Program.AppConfig.ABRPUrl;
@@ -267,7 +260,7 @@ namespace TodoApi.Models
             urljson += "&";
             urljson += "token=" + Program.AppConfig.ABRP_token;
             urljson += "&";
-            urljson += "tlm=" + newTLM;
+            urljson += "tlm=" + stringTLMParameter;
 
             try
             {
@@ -283,20 +276,18 @@ namespace TodoApi.Models
                     if (result.IsSuccessStatusCode)
                     {
                         // Ha ido bien
-                        Counter = Models.Tools.addCount();
+                        Counter = Models.Tools.AddCount();
 
                     }
                     if (Program.AppConfig.DebugMode)
                     {
                         Models.Tools.guardarLog(log);
                         // Guardar en log los datos enviados
-                        // Models.Tools.guardarLog(newTLM);
+                        // Models.Tools.guardarLog(stringTLMParameter);
                     }
                 }
                 // Guardar los datos en InfluxDB
                 Models.Tools.SaveDataIntoInfluxDB(objTLM);
-
-
             }
             catch (Exception ex)
             {
@@ -311,11 +302,11 @@ namespace TodoApi.Models
             return Counter;
         }
 
-        public static void sendData2HA(string Sensor, string jsonInString)
+        public static void SendData2HA(string Sensor, string jsonInString)
         {
-            var client = new HttpClient();
+            HttpClient client = new HttpClient();
             client.DefaultRequestHeaders.Add("Authorization", "Bearer " + Program.AppConfig.HomeAssistantToken);
-            var uri = Program.AppConfig.HomeAssistantServer + "/api/states/" + Sensor;
+            string uri = $"{Program.AppConfig.HomeAssistantServer}/api/states/{Sensor}";
             var response = client.PostAsync(uri, new StringContent(jsonInString, Encoding.UTF8, "application/json")).Result;
             if (!response.IsSuccessStatusCode)
             {

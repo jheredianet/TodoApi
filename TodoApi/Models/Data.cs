@@ -119,35 +119,35 @@ namespace TodoApi.Models
                     this.power = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/e/on":
-                    Program.carState.isOn = Value.Equals("no") ? false : true;
+                    Program.carState.isOn = !Value.Equals("no");
                     break;
                 case "abrp/status":
-                    Program.carState.isSending2ABRP = Value.Equals("1") ? true : false;
+                    Program.carState.isSending2ABRP = Value.Equals("1");
                     break;
             }
         }
     }
 
-    //public class returnTLM : tlm
-    //{
-    //    public new int soc { get; set; }
+    public class returnTLM : tlm
+    {
+        public new int soc { get; set; }
 
-    //    public returnTLM(tlm t)
-    //    {
-    //        this.alt = t.alt;
-    //        this.batt_temp = t.batt_temp;
-    //        this.car_model = t.car_model;
-    //        this.current = t.current;
-    //        this.ext_temp = t.ext_temp;
-    //        this.is_charging = t.is_charging;
-    //        this.lat = t.lat;
-    //        this.lon = t.lon;
-    //        this.power = t.power;
-    //        this.soc = Convert.ToInt32(Math.Floor(t.soc));
-    //        this.soh = t.soh;
-    //        this.speed = t.speed;
-    //        this.utc = t.utc;
-    //        this.voltage = t.voltage;
-    //    }
-    //}
+        public returnTLM(tlm t)
+        {
+            this.alt = t.alt;
+            this.batt_temp = t.batt_temp;
+            this.car_model = t.car_model;
+            this.current = t.current;
+            this.ext_temp = t.ext_temp;
+            this.is_charging = t.is_charging;
+            this.lat = t.lat;
+            this.lon = t.lon;
+            this.power = t.power;
+            this.soc = Convert.ToInt32(Math.Round(t.soc,0)); //Convert.ToInt32(Math.Floor(t.soc));
+            this.soh = t.soh;
+            this.speed = t.speed;
+            this.utc = t.utc;
+            this.voltage = t.voltage;
+        }
+    }
 }

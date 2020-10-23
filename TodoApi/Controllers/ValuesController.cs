@@ -35,7 +35,7 @@ namespace TodoApi.Controllers
             // Read File Date
             Counter.LastUpdate = Models.Tools.getCounterFileDate();
             // Read Counter
-            Counter.Total = Models.Tools.getCounter();
+            Counter.Total = Models.Tools.GetCounter();
 
             TimeSpan Interval = DateTime.Now - Counter.LastUpdate;
             Counter.LastUpdateInSeconds = Convert.ToInt32(Interval.TotalSeconds);
@@ -46,11 +46,10 @@ namespace TodoApi.Controllers
             //    Models.Tools.guardarLog(DateTime.Now.ToString() + " - " + Environment.MachineName);
             //}
 
-            return string.Format("Last update: {0} {1} ago. Total records: {2}. State of Charge: {3}%",
+            return string.Format("State of Charge: {0}% - Last update: {1} {2} ago.",
+                Models.PreviousData.getSOC(),
                 Counter.LastUpdateInSeconds < 60 ? Counter.LastUpdateInSeconds: Convert.ToInt32(Counter.LastUpdateInSeconds/60),
-                Counter.LastUpdateInSeconds < 60 ? "seconds" : "minutes",
-                Counter.Total,
-                Models.PreviousData.getSOC());
+                Counter.LastUpdateInSeconds < 60 ? "seconds" : "minutes");
         }
 
         // GET api/values/0
@@ -66,7 +65,7 @@ namespace TodoApi.Controllers
             }
 
             // Serialize JSON
-            var objTLM = Models.Tools.parseTLM(tlm);
+            var objTLM = Models.Tools.ParseTLM(tlm);
 
             if (objTLM == null)
             {
@@ -81,7 +80,7 @@ namespace TodoApi.Controllers
             {
                 // Call HomeAssistant only if its different
                 string jsonData = "{" + string.Format("{1}state{1}: {0}", Estado ? 1 : 0, '"') + "}";
-                Models.Tools.sendData2HA("sensor.abrp", jsonData);
+                Models.Tools.SendData2HA("sensor.abrp", jsonData);
 
                 // Models.Tools.guardarLog("Actual isSending2ABRP is: " + Program.carState.isSending2ABRP.ToString()
                 //     + " | Received: isActive: " + isActive);
@@ -89,7 +88,9 @@ namespace TodoApi.Controllers
                 StringBuilder msg = new StringBuilder();
                 msg.Append(Estado ? "Start " : "Stop ");
                 msg.AppendLine("Sending Data to ABRP.");
-                msg.AppendLine(Models.Tools.serializeReturnTLM(objTLM));
+                //msg.AppendLine(Models.Tools.SerializeReturnTLM(objTLM));
+                // In order to see how we send to ABRP - Reparse TLM
+                string stringTLMParameter = Models.Tools.SerializeReturnTLM(new Models.returnTLM(objTLM));
                 Models.Tools.guardarLog(msg.ToString());
 
                 Program.carState.isSending2ABRP = Estado;
