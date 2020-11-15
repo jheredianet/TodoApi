@@ -143,7 +143,7 @@ namespace TodoApi.Models
             this.lat = t.lat;
             this.lon = t.lon;
             this.power = t.power;
-            this.soc = Convert.ToInt32(Math.Round(t.soc,0)); //Convert.ToInt32(Math.Floor(t.soc));
+            this.soc = Convert.ToInt32(Math.Floor(t.soc)); //Convert.ToInt32(Math.Round(t.soc,0)); 
             this.soh = t.soh;
             this.speed = t.speed;
             this.utc = t.utc;
