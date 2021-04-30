@@ -11,8 +11,11 @@ namespace TodoApi.Models
 
     public class CarState
     {
-        public bool isSending2ABRP { get; set; }
+        // public bool isSending2ABRP { get; set; }
         public bool isOn { get; set; }
+        public string chargerstate { get; set; }
+        public double chargercurrent { get; set; }
+        public bool isOnAuxRecuperation { get; set; }
     }
 
     public class GlobalSettings
@@ -72,52 +75,61 @@ namespace TodoApi.Models
         public double current { get; set; }
         public double power { get; set; }
 
+
         public void setData(string Topic, string Value)
         {
             switch (Topic)
             {
-                case "ovms/jchm/KonaEV/metric/v/c/charging":
-                    this.is_charging = Value.Equals("yes") ? true : false;
+                //case "ovms/jchm/KonaEV/metric/v/c/charging":
+                //    this.is_charging = Value.Equals("yes") ? true : false;
+                //    break;
+                case "ovms/jchm/KonaEV/metric/v/c/current":
+                    Program.carState.chargercurrent = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/c/state":
+                    Program.carState.chargerstate = Value;
+                    is_charging = Program.carState.chargerstate.Equals("charging") || Program.carState.chargerstate.Equals("charging");
+                    Program.carState.isOnAuxRecuperation = is_charging && Program.carState.chargercurrent <= 0;
                     break;
                 case "ovms/jchm/KonaEV/metric/v/p/latitude":
-                    this.lat = Convert.ToDouble(Value);
+                    lat = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/p/longitude":
-                    this.lon = Convert.ToDouble(Value);
+                    lon = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/p/altitude":
-                    this.alt = Convert.ToDouble(Value);
+                    alt = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/soc":
-                    this.soc = Convert.ToDouble(Value);
+                    soc = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/soh":
-                    this.soh = Convert.ToDouble(Value);
+                    soh = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/p/speed":
-                    this.speed = Convert.ToDouble(Value);
+                    speed = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/e/temp":
-                    this.ext_temp = Convert.ToDouble(Value);
+                    ext_temp = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/temp":
-                    this.batt_temp = Convert.ToDouble(Value);
+                    batt_temp = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/voltage":
-                    this.voltage = Convert.ToDouble(Value);
+                    voltage = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/current":
-                    this.current = Convert.ToDouble(Value);
+                    current = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/b/power":
-                    this.power = Convert.ToDouble(Value);
+                    power = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/e/on":
                     Program.carState.isOn = Value.Equals("no") ? false : true;
                     break;
-                case "abrp/status":
-                    Program.carState.isSending2ABRP = Value.Equals("1") ? true : false;
-                    break;
+                    //case "abrp/status":
+                    //    Program.carState.isSending2ABRP = Value.Equals("1") ? true : false;
+                    //    break;
             }
         }
     }

@@ -22,18 +22,18 @@ namespace TodoApi.Models
         {
             // Models.Tools.guardarLog("Timed Background Service is working.");
             // Just run if it's sending data to ABRP
-            if (Program.carState.isSending2ABRP)
+            //if (Program.carState.isSending2ABRP)
+            //{
+            if (Program.carState.isOn || Program.currentTLM.is_charging)
             {
-                if (Program.carState.isOn || Program.currentTLM.is_charging)
-                {
-                    Tools.SendData2ABRP(Models.Tools.serializeReturnTLM(Program.currentTLM));
-                }
+                Tools.SaveAndSendData(Tools.serializeReturnTLM(Program.currentTLM));
             }
+            //}
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            Models.Tools.guardarLog("Timed Background Service is stopping.");
+            Tools.guardarLog("Timed Background Service is stopping.");
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
         }

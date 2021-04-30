@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Net.Http;
 using System.Reflection;
+using System.Threading;
 
 namespace TodoApi.Models
 {
@@ -13,13 +14,29 @@ namespace TodoApi.Models
     {
         private static string counterFile;
 
+        // This is for Thread Safe File Writing
+        // To avoid this kind of Errors: The process cannot access the file '{path}' because it is being used by another process
+        private static ReaderWriterLockSlim _readWriteLock = new ReaderWriterLockSlim();
+
+
         public static void guardarLog(string Texto)
         {
-            using (StreamWriter w = System.IO.File.AppendText(FicheroLog()))
+            // Set Status to Locked
+            _readWriteLock.EnterWriteLock();
+
+            try
             {
-                w.WriteLine("{0} - {1}", DateTime.Now.ToString(), Texto);
-                w.Flush();
-                w.Close();
+                using (StreamWriter w = System.IO.File.AppendText(FicheroLog()))
+                {
+                    w.WriteLine("{0} - {1}", DateTime.Now.ToString(), Texto);
+                    w.Flush();
+                    w.Close();
+                }
+            }
+            finally
+            {
+                // Release lock
+                _readWriteLock.ExitWriteLock();
             }
         }
 
@@ -53,7 +70,7 @@ namespace TodoApi.Models
             return i;
         }
 
-        public static Models.tlm parseTLM(string tlm)
+        public static tlm parseTLM(string tlm)
         {
             Models.tlm myJsonObject = null;
             try
@@ -174,6 +191,7 @@ namespace TodoApi.Models
                     .Field("distance", distance)
                     .Field("consumptionkwh", ConsumptionkWh)
                     .Field("voltaje", objTLM.voltage)
+                    .Field("is_aux_recuperation", Program.carState.isOnAuxRecuperation)
                     //.Field("Consumptionkwh100", ConsumptionkWh100)
                     .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
 
@@ -183,12 +201,12 @@ namespace TodoApi.Models
             influxDBClient.Dispose();
         }
 
-        public static int SendData2ABRP(string tlm)
+        public static int SaveAndSendData(string tlm)
         {
             int Counter = 0;
 
             // Serialize JSON
-            var objTLM = Models.Tools.parseTLM(tlm);
+            var objTLM = parseTLM(tlm);
 
             if (objTLM == null)
             {
@@ -210,40 +228,9 @@ namespace TodoApi.Models
             // var returnTLM = new Models.returnTLM(objTLM);
             // string newTLM = Models.Tools.serializeReturnTLM(objTLM);
             string newTLM = Models.Tools.serializeReturnTLM(objTLM);
-            
-            // Send data to ABRP (read from config)
-            var URL = Program.AppConfig.ABRPUrl;
 
-            var urljson = URL += "?";
-            urljson += "api_key=" + Program.AppConfig.ABRP_api_key;
-            urljson += "&";
-            urljson += "token=" + Program.AppConfig.ABRP_token;
-            urljson += "&";
-            urljson += "tlm=" + newTLM;
-            
             try
             {
-                using (var client = new HttpClient())
-                {
-                    client.BaseAddress = new Uri(urljson);
-                    //HTTP GET
-                    var responseTask = client.GetAsync("");
-                    responseTask.Wait();
-
-                    var result = responseTask.Result;
-                    var log = result.Version + " | " + result.ReasonPhrase + " | " + result.RequestMessage;
-                    if (result.IsSuccessStatusCode)
-                    {
-                        // Ha ido bien
-                        Counter = Models.Tools.addCount();
-
-                    }
-                    if (Program.AppConfig.DebugMode)
-                    {
-                        Models.Tools.guardarLog(log);
-                    }
-                }
-
                 // Guardar los datos en InfluxDB
                 Models.Tools.SaveDataIntoInfluxDB(objTLM);
             }
@@ -257,6 +244,52 @@ namespace TodoApi.Models
                 Models.Tools.guardarLog(msg);
             }
 
+            // Send data to ABRP (read from config)
+            // Only if it's not a recuperation
+            if (!Program.carState.isOnAuxRecuperation)
+            {
+                var URL = Program.AppConfig.ABRPUrl;
+
+                var urljson = URL += "?";
+                urljson += "api_key=" + Program.AppConfig.ABRP_api_key;
+                urljson += "&";
+                urljson += "token=" + Program.AppConfig.ABRP_token;
+                urljson += "&";
+                urljson += "tlm=" + newTLM;
+
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        client.BaseAddress = new Uri(urljson);
+                        //HTTP GET
+                        var responseTask = client.GetAsync("");
+                        responseTask.Wait();
+
+                        var result = responseTask.Result;
+                        var log = result.Version + " | " + result.ReasonPhrase + " | " + result.RequestMessage;
+                        if (result.IsSuccessStatusCode)
+                        {
+                            // Ha ido bien
+                            Counter = Models.Tools.addCount();
+
+                        }
+                        if (Program.AppConfig.DebugMode)
+                        {
+                            Models.Tools.guardarLog(log);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    string msg = ex.Message;
+                    if (ex.InnerException != null)
+                    {
+                        msg += " | " + ex.InnerException.Message;
+                    }
+                    Models.Tools.guardarLog(msg);
+                }
+            }
             return Counter;
         }
 

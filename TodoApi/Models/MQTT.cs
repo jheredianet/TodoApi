@@ -62,9 +62,8 @@ namespace TodoApi.Models
 
             // Subscribe Topics
             //await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/#");
-            await mqttClient.SubscribeAsync("abrp/status");
+            //await mqttClient.SubscribeAsync("abrp/status");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/e/on");
-            await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/c/charging");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/p/latitude");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/p/longitude");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/p/altitude");
@@ -76,6 +75,9 @@ namespace TodoApi.Models
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/b/voltage");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/b/current");
             await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/b/power");
+            await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/c/state");
+            await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/c/current");
+            // await mqttClient.SubscribeAsync("ovms/jchm/KonaEV/metric/v/c/charging");
         }
 
         public async Task HandleDisconnectedAsync(MqttClientDisconnectedEventArgs eventArgs)

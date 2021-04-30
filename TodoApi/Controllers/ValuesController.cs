@@ -46,7 +46,7 @@ namespace TodoApi.Controllers
             {
                 return BadRequest("ID. not valid");
             }
-            int Counter = Models.Tools.SendData2ABRP(tlm);
+            int Counter = Models.Tools.SaveAndSendData(tlm);
             return Ok(Counter);
 
         }
