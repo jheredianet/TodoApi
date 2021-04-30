@@ -1,0 +1,125 @@
+﻿@page
+
+@using System.Net;
+@using TodoApi.Models;
+@using Newtonsoft.Json;
+
+@model TodoApi.Pages.tools.ChargeCalculatorModel
+@{
+    var client = new WebClient();
+    client.Headers.Add(HttpRequestHeader.Authorization, "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiIwZDUzZDE0Yzg1ODI0MDI2YTA1MmNkMzRkY2VjZTYzNiIsImlhdCI6MTU4ODYwNjAwMiwiZXhwIjoxOTAzOTY2MDAyfQ.5KOw1Dn4GEHyRCt8KYnXTdIHVK3xXr8M_Q3DTu5jysg");
+    client.Headers.Add(HttpRequestHeader.ContentType, "application/json");
+    var soc = client.DownloadString("https://homeassistant.infoinnova.net/api/states/sensor.ovms_v_b_soc");
+    Sensor SOC = JsonConvert.DeserializeObject<Sensor>(soc);
+    var soh = client.DownloadString("https://homeassistant.infoinnova.net/api/states/sensor.ovms_v_b_soh");
+    Sensor SOH = JsonConvert.DeserializeObject<Sensor>(soh);
+
+    Vehicle vehicle = new Vehicle();
+    vehicle.SOC = Convert.ToDouble(SOC.state);
+    vehicle.SOH = Convert.ToDouble(SOH.state);
+}
+
+<style type="text/css">
+    .tg {
+        border-collapse: collapse;
+        border-spacing: 0;
+        margin: 0px auto;
+    }
+
+        .tg td {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg th {
+            border-color: black;
+            border-style: solid;
+            border-width: 1px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            font-weight: normal;
+            overflow: hidden;
+            padding: 10px 5px;
+            word-break: normal;
+        }
+
+        .tg .tg-0lax {
+            text-align: left;
+            vertical-align: top
+        }
+</style>
+<table class="tg">
+    <tbody>
+        <tr>
+            <td class="tg-0lax">Battery Capacity</td>
+            <td class="tg-0lax">@vehicle.BatteryCapacity kWh</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">State of Health</td>
+            <td class="tg-0lax">@vehicle.SOH%</td>
+        </tr>
+
+        <tr>
+            <td class="tg-0lax">Avg. Vehicle Efficiency</td>
+            <td class="tg-0lax"> kWh/100</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Avg. Charging Efficiency</td>
+            <td class="tg-0lax"> %</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax"></td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">SOC Current</td>
+            <td class="tg-0lax">@vehicle.SOC@SOC.attributes.unit_of_measurement</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">SOC Desired</td>
+            <td class="tg-0lax"> %</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Charged by</td>
+            <td class="tg-0lax"> %</td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Expected Range Km</td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax"></td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Socket output</td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Baterry intake</td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax"></td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Charging Speed</td>
+            <td class="tg-0lax"></td>
+        </tr>
+        <tr>
+            <td class="tg-0lax">Charging Time</td>
+            <td class="tg-0lax"></td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+ 

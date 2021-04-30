@@ -29,7 +29,7 @@ namespace TodoApi
 
             // Start Timer
             //services.AddHostedService<Models.TimedHostedService>();
-            
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -39,8 +39,9 @@ namespace TodoApi
             {
                 app.UseDeveloperExceptionPage();
             }
-
-            app.UseMvc();
+            app.UseStaticFiles();
+            app.UseMvcWithDefaultRoute();
+            //app.UseMvc();
         }
 
         private void MapConfiguration()
