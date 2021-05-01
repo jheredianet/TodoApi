@@ -85,11 +85,11 @@ namespace TodoApi.Models
                 //    break;
                 case "ovms/jchm/KonaEV/metric/v/c/current":
                     Program.carState.chargercurrent = Convert.ToDouble(Value);
+                    Program.carState.isOnAuxRecuperation = is_charging && !(Program.carState.chargercurrent > 0);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/c/state":
                     Program.carState.chargerstate = Value;
-                    is_charging = Program.carState.chargerstate.Equals("charging") || Program.carState.chargerstate.Equals("charging");
-                    Program.carState.isOnAuxRecuperation = is_charging && Program.carState.chargercurrent <= 0;
+                    is_charging = Value.Equals("charging") || Value.Equals("topoff");
                     break;
                 case "ovms/jchm/KonaEV/metric/v/p/latitude":
                     lat = Convert.ToDouble(Value);
