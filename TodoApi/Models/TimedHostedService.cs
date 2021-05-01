@@ -10,6 +10,7 @@ namespace TodoApi.Models
 
         private Timer _timer;
         private bool _isSending2ABR;
+        private object lockObject = new object(); // Just an object to wait DoWork complete the task
 
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -21,26 +22,40 @@ namespace TodoApi.Models
 
         private void DoWork(object state)
         {
-            // Models.Tools.guardarLog("Timed Background Service is working.");
-
-            // get Current state
-            bool Estado = _isSending2ABR;
-
-            if (Program.carState.IsOn || Program.carState.IsCharging)
+            if (Monitor.TryEnter(lockObject))
             {
-                _isSending2ABR = (Program.carState.ChargerCurrent > 0);
-                Tools.SaveAndSendData(Tools.serializeReturnTLM(Program.currentTLM), _isSending2ABR);
-            }
-            else
-            {
-                _isSending2ABR = false;
+                try
+                {
+                    // Models.Tools.guardarLog("Timed Background Service is working.");
+                    // get Current state
+                    bool Estado = _isSending2ABR;
+
+                    if (Program.carState.IsOn || Program.carState.IsCharging)
+                    {
+                        _isSending2ABR = Program.carState.ShouldSend2ABRP;
+                        Tools.SaveAndSendData(Tools.serializeReturnTLM(Program.currentTLM), _isSending2ABR);
+                    }
+                    else
+                    {
+                        _isSending2ABR = false;
+                    }
+
+                    if (Estado != _isSending2ABR)
+                    {
+                        // Call HomeAssistant only if Estado is different
+                        Tools.updateABRPSensorOnHA(_isSending2ABR);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Tools.guardarLog("DoWork Error: " + ex.Message);
+                }
+                finally
+                {
+                    Monitor.Exit(lockObject);
+                }
             }
 
-            if (Estado != _isSending2ABR)
-            {
-                // Call HomeAssistant only if Estado is different
-                Tools.updateABRPSensorOnHA(_isSending2ABR);
-            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
