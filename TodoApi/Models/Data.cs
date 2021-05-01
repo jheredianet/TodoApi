@@ -11,11 +11,18 @@ namespace TodoApi.Models
 
     public class CarState
     {
-        // public bool isSending2ABRP { get; set; }
-        public bool isOn { get; set; }
-        public string chargerstate { get; set; }
-        public double chargercurrent { get; set; }
-        public bool isOnAuxRecuperation { get; set; }
+        public bool IsOn { get; set; }
+        public bool IsCharging { get; set; }
+        public double ChargerCurrent { get; set; }
+
+        // Calculate Attributes
+        public bool ShouldSend2ABRP
+        {
+            get
+            {
+                return IsOn || (IsCharging && ChargerCurrent > 0);
+            }
+        }
     }
 
     public class GlobalSettings
@@ -23,6 +30,9 @@ namespace TodoApi.Models
         public string ABRPUrl { get; set; }
         public string ABRP_api_key { get; set; }
         public string ABRP_token { get; set; }
+        public string OVMSUrl { get; set; }
+        public string OVMSid { get; set; }
+        public string OVMSpass { get; set; }
         public string CAR_MODEL { get; set; }
         public double CAR_BATTERY { get; set; }
         public bool DebugMode { get; set; }
@@ -35,6 +45,8 @@ namespace TodoApi.Models
         public int CLOUDMQTT_PORT { get; set; }
         public string CLOUDMQTT_USER { get; set; }
         public string CLOUDMQTT_PASSWORD { get; set; }
+        public string HomeAssistantServer { get; set; }
+        public string HomeAssistantToken { get; set; }
     }
 
     public class tlm
@@ -80,17 +92,6 @@ namespace TodoApi.Models
         {
             switch (Topic)
             {
-                //case "ovms/jchm/KonaEV/metric/v/c/charging":
-                //    this.is_charging = Value.Equals("yes") ? true : false;
-                //    break;
-                case "ovms/jchm/KonaEV/metric/v/c/current":
-                    Program.carState.chargercurrent = Convert.ToDouble(Value);
-                    Program.carState.isOnAuxRecuperation = is_charging && !(Program.carState.chargercurrent > 0);
-                    break;
-                case "ovms/jchm/KonaEV/metric/v/c/state":
-                    Program.carState.chargerstate = Value;
-                    is_charging = Value.Equals("charging") || Value.Equals("topoff");
-                    break;
                 case "ovms/jchm/KonaEV/metric/v/p/latitude":
                     lat = Convert.ToDouble(Value);
                     break;
@@ -125,35 +126,40 @@ namespace TodoApi.Models
                     power = Convert.ToDouble(Value);
                     break;
                 case "ovms/jchm/KonaEV/metric/v/e/on":
-                    Program.carState.isOn = Value.Equals("no") ? false : true;
+                    Program.carState.IsOn = Value.Equals("yes");
                     break;
-                    //case "abrp/status":
-                    //    Program.carState.isSending2ABRP = Value.Equals("1") ? true : false;
-                    //    break;
+                case "ovms/jchm/KonaEV/metric/v/c/current":
+                    Program.carState.ChargerCurrent = Convert.ToDouble(Value);
+                    break;
+                case "ovms/jchm/KonaEV/metric/v/c/state":
+                    is_charging = Value.Equals("charging") || Value.Equals("topoff");
+                    Program.carState.IsCharging = is_charging;
+                    break;
             }
         }
     }
 
-    //public class returnTLM : tlm
-    //{
-    //    public new int soc { get; set; }
 
-    //    public returnTLM(tlm t)
-    //    {
-    //        this.alt = t.alt;
-    //        this.batt_temp = t.batt_temp;
-    //        this.car_model = t.car_model;
-    //        this.current = t.current;
-    //        this.ext_temp = t.ext_temp;
-    //        this.is_charging = t.is_charging;
-    //        this.lat = t.lat;
-    //        this.lon = t.lon;
-    //        this.power = t.power;
-    //        this.soc = Convert.ToInt32(Math.Floor(t.soc));
-    //        this.soh = t.soh;
-    //        this.speed = t.speed;
-    //        this.utc = t.utc;
-    //        this.voltage = t.voltage;
-    //    }
-    //}
+    public class returnTLM : tlm
+    {
+        public new int soc { get; set; }
+
+        public returnTLM(tlm t)
+        {
+            this.alt = t.alt;
+            this.batt_temp = t.batt_temp;
+            this.car_model = t.car_model;
+            this.current = t.current;
+            this.ext_temp = t.ext_temp;
+            this.is_charging = t.is_charging;
+            this.lat = t.lat;
+            this.lon = t.lon;
+            this.power = t.power;
+            this.soc = Convert.ToInt32(Math.Floor(t.soc)); //Convert.ToInt32(Math.Round(t.soc,0)); 
+            this.soh = t.soh;
+            this.speed = t.speed;
+            this.utc = t.utc;
+            this.voltage = t.voltage;
+        }
+    }
 }

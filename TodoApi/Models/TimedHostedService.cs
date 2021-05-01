@@ -9,6 +9,7 @@ namespace TodoApi.Models
     {
 
         private Timer _timer;
+        private bool _isSending2ABR;
 
 
         public Task StartAsync(CancellationToken cancellationToken)
@@ -21,14 +22,25 @@ namespace TodoApi.Models
         private void DoWork(object state)
         {
             // Models.Tools.guardarLog("Timed Background Service is working.");
-            // Just run if it's sending data to ABRP
-            //if (Program.carState.isSending2ABRP)
-            //{
-            if (Program.carState.isOn || Program.currentTLM.is_charging)
+
+            // get Current state
+            bool Estado = _isSending2ABR;
+
+            if (Program.carState.IsOn || Program.carState.IsCharging)
             {
-                Tools.SaveAndSendData(Tools.serializeReturnTLM(Program.currentTLM));
+                _isSending2ABR = (Program.carState.ChargerCurrent > 0);
+                Tools.SaveAndSendData(Tools.serializeReturnTLM(Program.currentTLM), _isSending2ABR);
             }
-            //}
+            else
+            {
+                _isSending2ABR = false;
+            }
+
+            if (Estado != _isSending2ABR)
+            {
+                // Call HomeAssistant only if Estado is different
+                Tools.updateABRPSensorOnHA(_isSending2ABR);
+            }
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
