@@ -204,9 +204,12 @@ namespace TodoApi.Models
 
         public static void SaveDataIntoInfluxDB(tlm objTLM)
         {
-            char[] Token = Program.AppConfig.InfluxDBToken.ToCharArray();
-            var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer,
-                Program.AppConfig.InfluxDBUser, Token, Program.AppConfig.InfluxDBDataBase, null);
+            //char[] Token = Program.AppConfig.InfluxDBToken.ToCharArray();
+            //var influxDBClient = InfluxDBClientFactory.CreateV1(Program.AppConfig.InfluxDBServer,
+            //    Program.AppConfig.InfluxDBUser, Token, Program.AppConfig.InfluxDBDataBase, null);
+
+            string Token = Program.AppConfig.InfluxDBToken;
+            var influxDBClient = InfluxDBClientFactory.Create(Program.AppConfig.InfluxDBServer, Token);
 
             using (var writeApi = influxDBClient.GetWriteApi())
             {
@@ -247,7 +250,8 @@ namespace TodoApi.Models
                     //.Field("Consumptionkwh100", ConsumptionkWh100)
                     .Timestamp(DateTime.UtcNow, WritePrecision.Ns);
 
-                writeApi.WritePoint(point);
+                //writeApi.WritePoint(point);
+                writeApi.WritePoint(Program.AppConfig.InfluxDBDataBase, Program.AppConfig.InfluxDBUser, point);
 
             }
             influxDBClient.Dispose();
