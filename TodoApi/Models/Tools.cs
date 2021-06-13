@@ -16,6 +16,7 @@ namespace TodoApi.Models
     public class Tools
     {
         private static string counterFile;
+        private static string lastTLM;
 
         // This is for Thread Safe File Writing
         // To avoid this kind of Errors: The process cannot access the file '{path}' because it is being used by another process
@@ -260,6 +261,7 @@ namespace TodoApi.Models
         public static int SaveAndSendData(string tlm, bool Send2ABRP)
         {
             int Counter = 0;
+            bool dataChanged = false;
 
             // Serialize JSON
             var objTLM = parseTLM(tlm);
@@ -273,6 +275,19 @@ namespace TodoApi.Models
             if (objTLM.lat == 0 && objTLM.lon == 0 && objTLM.alt == 0)
             {
                 // There is no GPS data yet
+                return 0;
+            }
+
+            // Verify if last data changed
+            if (lastTLM != tlm)
+            {
+                dataChanged = true;
+                lastTLM = tlm;
+            }
+
+            if (!dataChanged)
+            {
+                // No need to save and update data
                 return 0;
             }
 
@@ -360,7 +375,7 @@ namespace TodoApi.Models
             StringBuilder msg = new StringBuilder();
             msg.Append(Estado ? "Start " : "Stop ");
             msg.AppendLine("Sending Data to ABRP.");
-         
+
             Models.Tools.guardarLog(msg.ToString());
         }
 
